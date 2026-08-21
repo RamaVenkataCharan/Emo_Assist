@@ -1,26 +1,36 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, AlertCircle } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 
 interface VoiceInputButtonProps {
   onTranscript: (transcript: string) => void;
+  onListeningChange?: (isListening: boolean) => void;
   disabled?: boolean;
 }
 
 // Support standard and webkit SpeechRecognition
 interface IWindow extends Window {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SpeechRecognition?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   webkitSpeechRecognition?: any;
 }
 
 export default function VoiceInputButton({
   onTranscript,
+  onListeningChange,
   disabled = false,
 }: VoiceInputButtonProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+
+  const updateListening = (val: boolean) => {
+    setIsListening(val);
+    if (onListeningChange) onListeningChange(val);
+  };
 
   useEffect(() => {
     const win = window as unknown as IWindow;
@@ -39,24 +49,26 @@ export default function VoiceInputButton({
       recognition.lang = "en-US";
 
       recognition.onstart = () => {
-        setIsListening(true);
+        updateListening(true);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         if (transcript) {
           onTranscript(transcript);
         }
-        setIsListening(false);
+        updateListening(false);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
         console.warn("Speech recognition error:", event.error);
-        setIsListening(false);
+        updateListening(false);
       };
 
       recognition.onend = () => {
-        setIsListening(false);
+        updateListening(false);
       };
 
       recognitionRef.current = recognition;
@@ -77,7 +89,7 @@ export default function VoiceInputButton({
 
     if (isListening) {
       recognitionRef.current.stop();
-      setIsListening(false);
+      updateListening(false);
     } else {
       try {
         recognitionRef.current.start();

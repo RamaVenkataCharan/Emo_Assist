@@ -5,6 +5,7 @@ import { Send, Sparkles, RefreshCw, HeartHandshake, ShieldAlert } from "lucide-r
 import MessageBubble from "./MessageBubble";
 import VoiceInputButton from "./VoiceInputButton";
 import CrisisResourceBanner from "@/components/crisis/CrisisResourceBanner";
+import ChatCompanion3D from "./ChatCompanion3D";
 import { ChatMessageDTO } from "@/types";
 
 const SUGGESTED_PROMPTS = [
@@ -19,6 +20,7 @@ export default function ChatWindow() {
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [showCrisisBanner, setShowCrisisBanner] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -106,21 +108,37 @@ export default function ChatWindow() {
     setInputValue((prev) => (prev ? `${prev} ${transcript}` : transcript));
   };
 
+  // 3D Avatar state: "thinking" | "listening" | "idle"
+  const companionState = isLoading ? "thinking" : isVoiceListening ? "listening" : "idle";
+
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[550px] glass-panel rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800/90 relative">
-      {/* Chat Header */}
-      <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800/80 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center text-white shadow-glow-sm">
-            <HeartHandshake className="w-5 h-5" />
+    <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[560px] glass-panel-3d rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 relative">
+      {/* Chat Header with 3D Holographic Companion */}
+      <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md flex items-center justify-between">
+        <div className="flex items-center gap-3.5">
+          {/* 3D Hologram Avatar */}
+          <div className="relative flex items-center justify-center p-1 rounded-2xl bg-black/10 dark:bg-black/30 border border-white/10 shadow-inner">
+            <ChatCompanion3D state={companionState} size={46} />
+            <span
+              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${
+                isLoading
+                  ? "bg-purple-500 animate-ping"
+                  : isVoiceListening
+                  ? "bg-emerald-400 animate-pulse"
+                  : "bg-teal-400"
+              }`}
+            />
           </div>
+
           <div>
-            <h2 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg flex items-center gap-2">
+            <h2 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg flex items-center gap-2">
               EMO Companion
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                {isLoading ? "Reflecting..." : isVoiceListening ? "Listening..." : "3D Connected"}
+              </span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              A gentle space to reflect, be heard, and find calm.
+              A mindful non-judgmental space to reflect and find calm.
             </p>
           </div>
         </div>
@@ -136,7 +154,7 @@ export default function ChatWindow() {
 
       {/* Inline Crisis Warning Banner if triggered */}
       {showCrisisBanner && (
-        <div className="p-4 bg-rose-950/90 border-b border-rose-500/40 text-rose-200">
+        <div className="p-4 bg-rose-950/95 border-b border-rose-500/40 text-rose-200">
           <div className="flex items-center justify-between gap-2 mb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
               <ShieldAlert className="w-4 h-4 text-rose-400" />
@@ -154,10 +172,10 @@ export default function ChatWindow() {
       )}
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
-            <div className="w-16 h-16 rounded-3xl bg-indigo-500/10 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-3xl bg-indigo-500/10 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center shadow-glow-sm">
               <Sparkles className="w-8 h-8" />
             </div>
             <div>
@@ -193,13 +211,13 @@ export default function ChatWindow() {
       </div>
 
       {/* Suggested Prompts Chips */}
-      <div className="px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-900/40 overflow-x-auto flex gap-2 no-scrollbar">
+      <div className="px-4 py-2.5 border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-900/40 overflow-x-auto flex gap-2 no-scrollbar">
         {SUGGESTED_PROMPTS.map((prompt, idx) => (
           <button
             key={idx}
             onClick={() => handleSendMessage(prompt)}
             disabled={isLoading}
-            className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700/60 transition-all shrink-0"
+            className="text-xs whitespace-nowrap px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700/60 transition-all shrink-0 font-medium"
           >
             {prompt}
           </button>
@@ -216,6 +234,7 @@ export default function ChatWindow() {
       >
         <VoiceInputButton
           onTranscript={handleVoiceTranscript}
+          onListeningChange={setIsVoiceListening}
           disabled={isLoading}
         />
 
@@ -231,7 +250,7 @@ export default function ChatWindow() {
         <button
           type="submit"
           disabled={isLoading || !inputValue.trim()}
-          className="p-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-500/20 transition-all"
+          className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-500/25 transition-all active:scale-95"
         >
           <Send className="w-5 h-5" />
         </button>
