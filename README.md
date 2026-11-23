@@ -9,7 +9,7 @@ The app combines:
 - Crisis-aware safety checks
 - Interactive 3D mood visualization
 - Guided breathing and grounding experiences
-
+                                     
 ---
 
 ## Why this project exists
