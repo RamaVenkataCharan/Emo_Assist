@@ -7,7 +7,7 @@ The app combines:
 - Mood and journal tracking
 - Wellness analytics dashboard
 - Crisis-aware safety checks
-- Interactive 3D mood visualization
+- Interactive 3D mood visualization                        
 - Guided breathing and grounding experiences
                                      
 ---
